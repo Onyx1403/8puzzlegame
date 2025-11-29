@@ -1,0 +1,967 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace _8PuzzleGame
+{
+    public partial class MainFrom : Form
+    {
+        #region Thuoc tinh
+        private const string FINISH = "123804765";// trang thai cuoi cung dat duoc
+        private const int SPEED = 800; // toc do di chuyen cua cac o
+        private List<Status_Node> OpenList; // danh sach cac trang thai can duoc mo ra
+        private List<Status_Node> CloseList; // danh sach cac trang thai da duoc mo ra
+        private List<Status_Node> TraceList; // danh sach cac trang thai di qua de den trang thai dich
+        private int StepCount; // dem so buoc di chuyen de den trang thai dich
+        private Status_Node CurNode; // trang thai hien tai dang xet
+        private Status_Node Game; // de bai
+        private bool first = true;
+        private PictureBox pbGame;
+        private ProgressBar progressBar1;
+        private Timer timerPlay;
+        private IContainer components;
+        private Button btnNew;
+        private Button btnResolve;
+        private Button btnReset;
+        private Label lblCount;
+        private Label lblFinish;
+        private Label lblCountStatistic;
+        private bool reset = false;
+        #endregion
+
+        #region Cac phuong thuc
+        // tính toán xem trạng thái có thể giải được hay không
+        private bool IsCanSolve(Status_Node n)
+        {
+            int lenght = n.Code.Length;
+            int value = 0;
+            int[] k = new int[lenght];
+            for (int i = 0; i < lenght; i++)
+            {
+                int.TryParse(n.Code[i].ToString(), out k[i]);
+            }
+            for (int i = 0; i < lenght; i++)
+            {
+                int t = k[i];
+                if (t > 0)
+                {
+                    for (int j = i + 1; j < lenght; j++)
+                    {
+                        if (k[j] < t && k[j] > 0)
+                            value++;
+                    }
+                }
+            }
+            if (value % 2 == 0)
+                return true;
+            else
+                return false;
+        }
+
+        // thêm trạng thái vào danh sách mở
+        // sao cho danh sách luôn được sắp xếp theo giá trị F tăng dần
+        //biến vào là node n
+
+        private void AddToOpenList(Status_Node n)
+        {
+            int i = 1;
+
+            if (OpenList.Count == 0)// neu list rong
+            {
+                OpenList.Add(n);
+                return;
+            }
+            //neu list khong rong
+            bool found = false;
+            bool canadd = false;
+            for (i = 0; i < OpenList.Count; i++)
+            {
+                //tim thay
+                if (n.Code == OpenList[i].Code)
+                {
+                    found = true;
+                    //so sanh G
+                    if (n.G < OpenList[i].G)
+                    {
+                        canadd = true;
+                        OpenList.RemoveAt(i);// xoa phan tu thu i
+                    }
+                    return;
+                }
+            }
+            // khong tim thay hoac co the tim duoc
+            if (!found || canadd)
+            {
+                //duyet list va chen theo thu tu F tang dan
+                for (i = 0; i < OpenList.Count; i++)
+                {
+                    if (n.F < OpenList[i].F)
+                    {
+                        OpenList.Insert(i, n);
+                        break;
+                    }
+                }
+                if (i == OpenList.Count)// them vao cuoi cung
+                    OpenList.Add(n);
+                else
+                    OpenList.Insert(i, n);
+            }
+
+
+        }
+        // lấy 1 trạng thái từ danh sách mở chuyển sang danh sách clone 
+        // do list đã sắp xếp theo thứ tự tăng dân của F nên lấy phần tử đầu tiên (OpenList[0])
+        // trả về node lấy được
+
+        private Status_Node GetNodeFromOpenList()
+        {
+            if (OpenList.Count > 0)
+            {
+                Status_Node n = OpenList[0];
+                OpenList.RemoveAt(0);
+                return n;
+            }
+            return null;
+
+        }
+
+        // kiểm tra sự tồn tại của 1 node trong list Close
+        // nếu có trả về true, ngược lại trả về false
+        private bool IsInCloseList(Status_Node n)
+        {
+            for (int i = 0; i < CloseList.Count; i++)
+            {
+                if (CloseList[i].Code.Equals(n.Code))
+                    return true;
+            }
+            return false;
+        }
+
+        // hàm đánh giá 
+        // trả về giá trị H là số ô không đúng vị trí so với trạng thái đích
+
+        private int CalculateH(string current)
+        {
+            int count = 0;
+            for (int i = 0; i < current.Length; i++)
+            {
+                if (!current[i].Equals(FINISH[i]))
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        // tính toán các trạng thía con của node n
+        private void ExpandNode(Status_Node n)
+        {
+            int index = n.Code.IndexOf('0');// tim vi tri cua o trong trang thai hien tai
+            switch (index)
+            {
+                case 0: // neu o 0 dang o vi tri cua o so 1 thi co the sang phai(vi tri 1) hoac xuong duoi (vi tri 3)
+                    {
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[0] = child1[1];
+                        child1[1] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+
+                        // neu node n khong co cha hoac con sinh ra khac n
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // xuong duoi
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[0] = child2[3];
+                        child2[3] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+                case 1:// neu o 0 dang o vi tri cua o so 2 thi co the sang trai(vi tri 0) hoac sang phai(vi tri 2) hoac xuong duoi (vi tri 4)
+                    {
+                        // sang trai
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[1] = child1[0];
+                        child1[0] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang phai
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[1] = child2[2];
+                        child2[2] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // xuong duoi
+                        char[] child3 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child3[1] = child3[4];
+                        child3[4] = '0';
+                        map = new string(child3);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua
+                        }
+                        break;
+                    }
+                case 2:// o '0' dang o vi tri so 2, co the sang trai(vi tri 1) hoac xuong duoi(vi tri 5)
+                    {
+                        // sang trai
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[2] = child1[1];
+                        child1[1] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // xuong duoi
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[2] = child2[5];
+                        child2[5] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+                case 3: // o '0' dang o vi tri so 3, co the len tren(vi tri 0) hoac sang phai(vi tri 4) hoac xuong duoi(vi tri 6)
+                    {
+                        // len tren
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[3] = child1[0];
+                        child1[0] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang phai
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[3] = child2[4];
+                        child2[4] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // xuong duoi
+                        char[] child3 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child3[3] = child3[6];
+                        child3[6] = '0';
+                        map = new string(child3);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+                case 4:// o '0' dang o vi tri so 4, co the len tren(vi tri 1) hoac sang trai(vi tri 3) hoac sang phai(vi tri 5) hoac xuong duoi(vi tri 7)
+                    {
+                        // len tren
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[4] = child1[1];
+                        child1[1] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang trai
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[4] = child2[3];
+                        child2[3] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang phai
+                        char[] child3 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child3[4] = child3[5];
+                        child3[5] = '0';
+                        map = new string(child3);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // xuong duoi
+                        char[] child4 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child4[4] = child4[7];
+                        child4[5] = '0';
+                        map = new string(child3);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+                case 5:// o '0' dang o vi tri so 5, co the len tren(vi tri 2) hoac sang trai(vi tri 4) hoac xuong duoi(vi tri 8)
+                    {
+                        // len tren
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[5] = child1[2];
+                        child1[2] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang trai
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[5] = child2[4];
+                        child2[4] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // xuong duoi
+                        char[] child3 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child3[5] = child3[8];
+                        child3[8] = '0';
+                        map = new string(child3);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+                case 6:// o '0' dang o vi tri so 6, co the len tren(vi tri 3) hoac sang phai(vi tri 7)
+                    {
+                        // len tren
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[6] = child1[3];
+                        child1[3] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang phai
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[6] = child2[7];
+                        child2[7] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+                case 7:// o '0' dang o vi tri so 7, co the len tren(vi tri 4) hoac sang trai(vi tri 6) hoac sang phai(vi tri 8)
+                    {
+                        // len tren
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[7] = child1[4];
+                        child1[4] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang trai
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[7] = child2[6];
+                        child2[6] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang phai
+                        char[] child3 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child3[7] = child3[8];
+                        child3[8] = '0';
+                        map = new string(child3);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+                case 8:// o '0' dang o vi tri so 8, co the len tren(vi tri 5) hoac sang trai(vi tri 7)
+                    {
+                        // len tren
+                        char[] child1 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child1[8] = child1[5];
+                        child1[5] = '0';
+                        string map = new string(child1);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        // sang trai
+                        char[] child2 = n.Code.ToCharArray();// tao 1 ban sao cua trang thai hien tai de sua doi
+                        child2[8] = child2[7];
+                        child2[7] = '0';
+                        map = new string(child2);// chuyen doi mang ki tu da sua doi thanh chuoi
+                        if (n.Parent == null || !n.Code.Equals(map))
+                        {
+                            // tao trang thai con
+                            Status_Node child = new Status_Node(map, n, n.G + 1, CalculateH(map));
+                            // neu node con chua co trong list clone
+                            if (!IsInCloseList(child))
+                            {
+                                //chen vao list open
+                                AddToOpenList(child);
+                            }
+                        }
+                        break;
+                    }
+            }
+        }
+        private void Stop()// dung lai neu tim duoc
+        {
+            if (this.CurNode.Code.Equals(FINISH))// neu nut hien tai dai dien cho trang thai dich
+            {
+                //hien thi thong bao hoan thanh
+                MessageBox.Show("Da giai xong", "Hoan thanh", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // tiep tuc hay thoat
+                if (MessageBox.Show("Ban co muon tiep tuc khong?", "Tiep tuc", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    lblFinish.Text = "";
+                    lblCountStatistic.Text = "";
+                }
+                else
+                {
+                    Application.Exit();
+                }
+            }
+        }
+        // di chuyen cac o trong 1 huong cu the( trai, phai, len, xuong)
+        private bool MoveStep(Direction dir)
+        {
+            int index = -1;//khoi tao bien index voi gia tri -1
+            if (this.CurNode != null)
+            {
+                index = this.CurNode.Code.IndexOf('0');// tim vi tri cua o trong trang thai hien tai
+            }
+            switch (dir)//thuc hien viec di chuyen o trong trong huong duoc chi dinh
+            {
+                case Direction.LEFT:
+                    {
+                        if (index % 3 == 2) return false;// neu o trong o cot ben phai cung thi khong the di chuyen sang trai
+                        char[,] data = this.CurNode.Map;// lay ban do hien tai
+                        char tmp = data[index / 3, index % 3 + 1];// luu gia tri o ben phai o trong                     
+                        data[index / 3, index % 3] = tmp;// dat gia tri o ben phai no ve vi tri o trong
+                        data[index / 3, index % 3 + 1] = '0';// dat o trong ve vi tri o ben phai no
+                        this.CurNode.Map = data;// cap nhat lai ban do cua trang thai hien tai
+                        break;
+                    }
+                case Direction.RIGHT:
+                    {
+                        if (index % 3 == 0) return false;// neu o trong o cot ben phai cung thi khong the di chuyen sang trai
+                        char[,] data = this.CurNode.Map;// lay ban do hien tai
+                        char tmp = data[index / 3, index % 3 + 1];// luu gia tri o ben phai o trong                     
+                        data[index / 3, index % 3] = tmp;// dat gia tri o ben phai no ve vi tri o trong
+                        data[index / 3, index % 3 + 1] = '0';// dat o trong ve vi tri o ben phai no
+                        this.CurNode.Map = data;// cap nhat lai ban do cua trang thai hien tai
+                        break;
+                    }
+
+                case Direction.UP:
+
+                    {
+                        if (index / 3 == 2) return false;// neu o trong o cot ben phai cung thi khong the di chuyen sang trai
+                        char[,] data = this.CurNode.Map;// lay ban do hien tai
+                        char tmp = data[index / 3, index % 3 + 1];// luu gia tri o ben phai o trong                     
+                        data[index / 3, index % 3] = tmp;// dat gia tri o ben phai no ve vi tri o trong
+                        data[index / 3, index % 3 + 1] = '0';// dat o trong ve vi tri o ben phai no
+                        this.CurNode.Map = data;// cap nhat lai ban do cua trang thai hien tai
+                        break;
+                    }
+
+
+                case Direction.DOWN:
+                    {
+                        if (index / 3 == 0) return false;// neu o trong o cot ben phai cung thi khong the di chuyen sang trai
+                        char[,] data = this.CurNode.Map;// lay ban do hien tai
+                        char tmp = data[index / 3, index % 3 + 1];// luu gia tri o ben phai o trong                     
+                        data[index / 3, index % 3] = tmp;// dat gia tri o ben phai no ve vi tri o trong
+                        data[index / 3, index % 3 + 1] = '0';// dat o trong ve vi tri o ben phai no
+                        this.CurNode.Map = data;// cap nhat lai ban do cua trang thai hien tai                       
+                        break;
+                    }
+
+            }
+            return true;
+        }
+        #endregion
+        public MainFrom()
+        {
+            InitializeComponent();
+            OpenList = new List<Status_Node>();
+            CloseList = new List<Status_Node>();
+            TraceList = new List<Status_Node>();
+            this.timerPlay.Interval = SPEED; // thoi gian giua cac buoc di chuyen
+        }
+        private void PanitBackground(Graphics g)// ve luoi 3 x 3
+        {
+            g.Clear(Color.Gray);
+            Pen p = new Pen(Color.Black, 3);
+
+            g.DrawLine(p, 50, 50, 50, 350);
+            g.DrawLine(p, 50, 350, 350, 350);
+            g.DrawLine(p, 350, 350, 350, 50);
+            g.DrawLine(p, 350, 50, 50, 50);
+        }
+        // ve 8 puzzle len picturebox
+        private void pbGame_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            PanitBackground(g);
+            if (this.CurNode != null)
+            {
+                this.CurNode.Paint(g);
+            }
+        }
+        //di chuyen cac o khi click chuot
+        private void pbGame_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(this.timerPlay.Enabled)// neu dang trong qua trinh tu dong giai
+            {
+                return;// khong cho phep di chuyen bang chuot
+            }
+            Point p = new Point(e.Y/96, e.X/96);// lay toa do o duoc click
+            bool isok = false;// khoi tao bien kiem tra di chuyen hop le
+            if (!isok)
+            {
+                Point p1 = p;
+                p1.Offset(-1, 0);// o ben tren
+                if(p1.X >= 0 && p1.Y >=0 && p1.X < 3 && p1.Y < 3)// kiem tra o ben tren co hop le khong
+                {
+                    if(this.CurNode.Map[p1.X, p1.Y] == '0')// neu o ben tren la o trong
+                    {
+                        isok = MoveStep(Direction.UP);// di chuyen len tren
+                    }
+                }
+            }
+            if (!isok)
+            {
+                Point p2 = p;
+                p2.Offset(1, 0);// o ben duoi
+                if (p2.X >= 0 && p2.Y >= 0 && p2.X < 3 && p2.Y < 3)// kiem tra o ben duoi co hop le khong
+                {
+                    if (this.CurNode.Map[p2.X, p2.Y] == '0')// neu o ben duoi la o trong
+                    {
+                        isok = MoveStep(Direction.DOWN);// di chuyen xuong duoi
+                    }
+                }
+            }
+            if (!isok)
+            {
+                Point p3 = p;
+                p3.Offset(0, -1);// o ben trai
+                if (p3.X >= 0 && p3.Y >= 0 && p3.X < 3 && p3.Y < 3)// kiem tra o ben trai co hop le khong
+                {
+                    if (this.CurNode.Map[p3.X, p3.Y] == '0')// neu o ben trai la o trong
+                    {
+                        isok = MoveStep(Direction.LEFT);// di chuyen sang trai
+                    }
+                }
+            }
+            if (!isok)
+            {
+                Point p4 = p;
+                p4.Offset(0, 1);// o ben phai
+                if (p4.X >= 0 && p4.Y >= 0 && p4.X < 3 && p4.Y < 3)// kiem tra o ben phai co hop le khong
+                {
+                    if (this.CurNode.Map[p4.X, p4.Y] == '0')// neu o ben phai la o trong
+                    {
+                        isok = MoveStep(Direction.RIGHT);// di chuyen sang phai
+                    }
+                }
+            }
+            if (isok)
+            {
+                this.btnResolve.Text = "Giai";
+                this.pbGame.Refresh();// cap nhat lai picturebox
+                this.StepCount++;// tang so buoc di chuyen
+                this.lblCount.Text = this.StepCount.ToString();// hien thi so buoc di chuyen
+                Stop();
+            }
+        }
+
+        private void BtnNew_click(object sender, EventArgs e)
+        {
+            this.timerPlay.Enabled = false;
+            this.btnResolve.Enabled = true;
+            //khoi tao trang thai ban dau
+            if (this.first)
+            {
+                this.CurNode = new Status_Node("876042531", null, 0, CalculateH("876042531"));
+                this.first = false;
+            }
+            else
+            {
+                if (this.reset)
+                {
+                    this.CurNode = this.Game;
+                    this.reset = false;
+                }
+                else
+                {
+                    //khoi tao ngau nhien
+                    this.CurNode = new Status_Node(FINISH, null, 0, 0);
+                    Random random = new Random();
+                    for(int i = 0;i< 100; i++)
+                    {
+                        int j = random.Next(1000) % 4;
+                        MoveStep((Direction)j);// xao tron bang cach di chuyen ngau nhien
+                    }
+                }
+            }
+            this.Game = new Status_Node(this.CurNode.Code, null, 0, CalculateH(this.CurNode.Code));
+            this.btnResolve.Text = "Giai";
+            this.StepCount = 0;
+            this.lblCount.Text = this.StepCount.ToString();
+            this.pbGame_MouseClick().Refresh();// cap nhat lai picturebox
+        }
+        private void btnResolve_Click(object sender, EventArgs e)
+        {
+            if(this.btnResolve.Text = "Giai"|| this.btnResolve.Text == "Tiep tuc")
+            {
+                if(this.btnResolve_Click().Text == "Giai")
+                {
+                    if (IsCanSolve(this.CurNode))
+                    {
+                        progressBar1.Style = ProgressBarStyle.Marquee;
+                        progressBar1.MarqueeAnimationSpeed = 20;
+                        Status_Node n = StartPosition(this.CurNode.Code, FINISH);
+                        if(mbox != null)
+                        {
+                            TraceList.Clear();
+                            while( n != null)
+                            {
+
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // dung lai
+                this.btnResolve.Text = "Tiếp tục";
+                this.timerPlay.Enabled = false;
+            }
+        }
+        //truy vet, hien thi cac buoc di chuyen
+        private void timerPlay_Tick(object sender, EventArgs e)
+        {
+            progressBar1.Style = ProgressBarStyle.Continuous;
+            progressBar1.Maximum = this.TraceList.Count;
+            progressBar1.Minimum = 0;
+            progressBar1.Step = 1;
+            if (this.StepCount < this.TraceList.Count)
+            {
+                this.CurNode = this.TraceList[this.StepCount];
+                pbGame.Refresh();// cap nhat lai picturebox
+                this.lblCount.Text = "" + this.StepCount++;
+                progressBar1.PerfromStep();
+                if (this.StepCount == this.TraceList.Count)
+                {
+                    this.timerPlay.Enabled = false;
+                    lblFinish.Text = "Da giai xong";
+                    MessageBox.Show("Da giai xong", "Hoan thanh", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (MessageBox.Show("Ban muon tiep tuc khong?", "?", MessageBoxButtons.YesNo) = DialogResult.Yes)
+                    {
+                        lblFinish.Text = "";
+                        lblCountStatistic.Text = "";
+                        progressBar1.Value = 0;
+                        BtnNew_click(null, null);
+                    }
+                    else
+                    {
+                        Application.Exit();
+                    }
+                    GC.Collect();
+                    this.btnResolve.Text = "Giai";
+                }
+            }
+        }
+        private void MainFrom_Shown(object sender, EventArgs e)
+        {
+            BtnNew_click(null, null);
+        }
+        private void pbGame_Click(object sender, EventArgs e)
+        {
+        }
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            this.pbGame = new System.Windows.Forms.PictureBox();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.timerPlay = new System.Windows.Forms.Timer(this.components);
+            this.btnNew = new System.Windows.Forms.Button();
+            this.btnResolve = new System.Windows.Forms.Button();
+            this.btnReset = new System.Windows.Forms.Button();
+            this.lblCount = new System.Windows.Forms.Label();
+            this.lblFinish = new System.Windows.Forms.Label();
+            this.lblCountStatistic = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.pbGame)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // pbGame
+            // 
+            this.pbGame.Location = new System.Drawing.Point(32, 65);
+            this.pbGame.Name = "pbGame";
+            this.pbGame.Size = new System.Drawing.Size(246, 238);
+            this.pbGame.TabIndex = 0;
+            this.pbGame.TabStop = false;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(32, 351);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(246, 23);
+            this.progressBar1.TabIndex = 1;
+            // 
+            // btnNew
+            // 
+            this.btnNew.Location = new System.Drawing.Point(431, 128);
+            this.btnNew.Name = "btnNew";
+            this.btnNew.Size = new System.Drawing.Size(75, 23);
+            this.btnNew.TabIndex = 2;
+            this.btnNew.Text = "New";
+            this.btnNew.UseVisualStyleBackColor = true;
+            // 
+            // btnResolve
+            // 
+            this.btnResolve.Location = new System.Drawing.Point(431, 177);
+            this.btnResolve.Name = "btnResolve";
+            this.btnResolve.Size = new System.Drawing.Size(75, 23);
+            this.btnResolve.TabIndex = 3;
+            this.btnResolve.Text = "Resolve";
+            this.btnResolve.UseVisualStyleBackColor = true;
+            // 
+            // btnReset
+            // 
+            this.btnReset.Location = new System.Drawing.Point(431, 232);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(75, 23);
+            this.btnReset.TabIndex = 4;
+            this.btnReset.Text = "Reset";
+            this.btnReset.UseVisualStyleBackColor = true;
+            // 
+            // lblCount
+            // 
+            this.lblCount.AutoSize = true;
+            this.lblCount.Location = new System.Drawing.Point(446, 65);
+            this.lblCount.Name = "lblCount";
+            this.lblCount.Size = new System.Drawing.Size(41, 16);
+            this.lblCount.TabIndex = 5;
+            this.lblCount.Text = "Count";
+            // 
+            // lblFinish
+            // 
+            this.lblFinish.AutoSize = true;
+            this.lblFinish.Location = new System.Drawing.Point(443, 287);
+            this.lblFinish.Name = "lblFinish";
+            this.lblFinish.Size = new System.Drawing.Size(0, 16);
+            this.lblFinish.TabIndex = 6;
+            // 
+            // lblCountStatistic
+            // 
+            this.lblCountStatistic.AutoSize = true;
+            this.lblCountStatistic.Location = new System.Drawing.Point(443, 329);
+            this.lblCountStatistic.Name = "lblCountStatistic";
+            this.lblCountStatistic.Size = new System.Drawing.Size(0, 16);
+            this.lblCountStatistic.TabIndex = 7;
+            // 
+            // MainFrom
+            // 
+            this.ClientSize = new System.Drawing.Size(560, 386);
+            this.Controls.Add(this.lblCountStatistic);
+            this.Controls.Add(this.lblFinish);
+            this.Controls.Add(this.lblCount);
+            this.Controls.Add(this.btnReset);
+            this.Controls.Add(this.btnResolve);
+            this.Controls.Add(this.btnNew);
+            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.pbGame);
+            this.Name = "MainFrom";
+            this.Load += new System.EventHandler(this.MainFrom_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.pbGame)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        private void MainFrom_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
+}

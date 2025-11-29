@@ -1,0 +1,12 @@
+C:\Users\nguye\source\repos\8PuzzleGame\bin\Debug\8PuzzleGame.exe.config
+C:\Users\nguye\source\repos\8PuzzleGame\bin\Debug\8PuzzleGame.exe
+C:\Users\nguye\source\repos\8PuzzleGame\bin\Debug\8PuzzleGame.pdb
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\8PuzzleGame.csproj.AssemblyReference.cache
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\_8PuzzleGame.MainFrom.resources
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\_8PuzzleGame.Form1.resources
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\_8PuzzleGame.Properties.Resources.resources
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\8PuzzleGame.csproj.GenerateResource.cache
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\8PuzzleGame.csproj.CoreCompileInputs.cache
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\8PuzzleGame.exe
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\8PuzzleGame.pdb
+C:\Users\nguye\source\repos\8PuzzleGame\obj\Debug\8PuzzleGame.exe.config
