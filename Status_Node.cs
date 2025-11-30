@@ -53,7 +53,7 @@ namespace _8PuzzleGame
                 m_Code = sb.ToString();
             }
         }
-        // ham danh gia
+        // hàm đánh giá
         public int G
         {
             get { return m_G; }
@@ -105,8 +105,8 @@ namespace _8PuzzleGame
                 }
             }
         }
-        // --- Phương thức So sánh ---
-        // Cần thiết để sử dụng trong HashSet/Dictionary (Mặc dù A* thường dùng List/PriorityQueue)
+        //phương thức So sánh
+        //cần thiết để sử dụng trong HashSet/Dictionary (Mặc dù A* thường dùng List/PriorityQueue)
         public override bool Equals(object obj)
         {
             return obj is Status_Node node &&

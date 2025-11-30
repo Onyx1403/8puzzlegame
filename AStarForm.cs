@@ -488,7 +488,7 @@ namespace _8PuzzleGame
                     this.timerPlay.Enabled = false;
                     lblFinish.Text = "Đã giải xong";
                     MessageBox.Show("Đã giải xong", "Hoàn thành", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    if (MessageBox.Show("Bạn có muốn tiếp tục không", "?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    if (MessageBox.Show("Bạn có muốn tiếp tục không?", "Thông báo", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     {
                         lblFinish.Text = "";
                         lblCountStatistic.Text = "";
@@ -506,8 +506,15 @@ namespace _8PuzzleGame
         }
         private void MainFrom_Shown(object sender, EventArgs e)
         {
-            BtnNew_click(null, null);
+            // Khởi tạo bàn cờ ở trạng thái đích
+            this.CurNode = new Status_Node(FINISH, null, 0, CalculateH(FINISH));
+            this.Game = new Status_Node(this.CurNode.Code, null, 0, CalculateH(this.CurNode.Code));
+            this.StepCount = 0;
+            this.lblCount.Text = "0";
+            this.btnResolve.Text = "Giai";
+            this.pbGame.Refresh();
         }
+
         private void pbGame_Click(object sender, EventArgs e)
         {
         }
@@ -540,7 +547,7 @@ namespace _8PuzzleGame
             // 
             this.progressBar1.Location = new System.Drawing.Point(32, 371);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(246, 23);
+            this.progressBar1.Size = new System.Drawing.Size(300, 23);
             this.progressBar1.TabIndex = 1;
             // 
             // timerPlay
