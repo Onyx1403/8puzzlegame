@@ -3,20 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\astarform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\astarform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:astarform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|c:\\users\\nguye\\source\\repos\\8puzzlegame\\astarform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:astarform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|c:\\users\\nguye\\source\\repos\\8puzzlegame\\direction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:direction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|c:\\users\\nguye\\source\\repos\\8puzzlegame\\status_node.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:status_node.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|c:\\users\\nguye\\source\\repos\\8puzzlegame\\astarform.resx||{81828910-B8B3-4D2B-99A3-067027C180C1}",
+      "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:astarform.resx||{81828910-B8B3-4D2B-99A3-067027C180C1}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|c:\\users\\nguye\\source\\repos\\8puzzlegame\\astarform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:astarform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\status_node.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1081C1F7-56FE-433E-8255-46F150243BCE}|8PuzzleGame.csproj|solutionrelative:status_node.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,17 +34,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "AStarForm.cs",
               "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.cs",
               "RelativeDocumentMoniker": "AStarForm.cs",
               "ToolTip": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.cs",
               "RelativeToolTip": "AStarForm.cs",
-              "ViewState": "AgIAAGkCAAAAAAAAAAAkwHYCAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAHACAAAAAAAAAAAQwI0CAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-28T11:55:15.455Z",
               "IsPinned": true,
@@ -44,13 +52,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAoAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAgAAAAaAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-28T14:53:02.954Z",
               "IsPinned": true,
@@ -58,15 +66,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AStarForm.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.cs",
-              "RelativeDocumentMoniker": "AStarForm.cs",
-              "ToolTip": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.cs [Design]",
-              "RelativeToolTip": "AStarForm.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-28T15:25:49.81Z",
-              "EditorCaption": " [Design]"
+              "DocumentIndex": 4,
+              "Title": "AStarForm.resx",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.resx",
+              "RelativeDocumentMoniker": "AStarForm.resx",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.resx",
+              "RelativeToolTip": "AStarForm.resx",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001005|",
+              "WhenOpened": "2025-12-07T09:11:17.402Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -76,10 +84,35 @@
               "RelativeDocumentMoniker": "Status_Node.cs",
               "ToolTip": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\Status_Node.cs",
               "RelativeToolTip": "Status_Node.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAG4AAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAFwAAAAAAAAAAAAQwHkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-28T11:25:41.008Z",
+              "WhenOpened": "2025-12-07T09:10:11.258Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Direction.cs",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\Direction.cs",
+              "RelativeDocumentMoniker": "Direction.cs",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\Direction.cs",
+              "RelativeToolTip": "Direction.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAuwAgAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-07T09:10:06.966Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AStarForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.cs",
+              "RelativeDocumentMoniker": "AStarForm.cs",
+              "ToolTip": "C:\\Users\\nguye\\source\\repos\\8PuzzleGame\\AStarForm.cs [Design]",
+              "RelativeToolTip": "AStarForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-28T15:25:49.81Z",
+              "EditorCaption": " [Design]"
             }
           ]
         }
